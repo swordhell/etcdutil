@@ -1,0 +1,4 @@
+name: 'single-etcd'
+listen-peer-urls: http://0.0.0.0:2381 # 用于指定etcd和客户端的连接端口
+listen-client-urls: http://0.0.0.0:2382 # 用于指定etcd服务器之间通讯的端口
+auto-compaction-retention: '2' # 防止跑得太久了之后无法出现碎片太多的问题

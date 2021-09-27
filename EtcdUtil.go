@@ -1,6 +1,11 @@
 //
-// 2021-09-26
+// 2021-09-26 实现了etcd的服务发现的逻辑
 //
+//   服务发现：服务器将会往etcd中的key里面写入自己的服务器连接信息，并且将
+//           写入的时候，使用租赁的方式，意味着如果租赁结束了，这个数据将会
+//           被删除掉。客户端将会在启动的时候获取一次etcd里面信息，并且使用
+//           watch操作，监听这个etcd中的key里面的信息的变换。当某个服务器
+//           挂掉了，或者开始工作了，就能读取到数据。
 //
 package etcdutil
 
@@ -96,7 +101,7 @@ func (util *ETCDUtil) Close() {
 func (util *ETCDUtil) initLease() error {
 
 	// 如果之前租赁过，将取消租赁
-	util.revokeLease()
+	util.RevokeLease()
 
 	if leaseRsp, err := util.cli.Lease.Grant(util.ctx, util.ttl); err == nil {
 		util.leaseId = leaseRsp.ID
@@ -129,7 +134,7 @@ func (util *ETCDUtil) initLease() error {
 }
 
 // 取消租赁
-func (util *ETCDUtil) revokeLease() {
+func (util *ETCDUtil) RevokeLease() {
 
 	if util.leaseId != 0 {
 		util.cli.Lease.Revoke(util.ctx, util.leaseId)
@@ -167,7 +172,7 @@ func (util *ETCDUtil) GetByPrefix(prefix string) (keys, values []string, e error
 	}
 }
 
-// 将数据设置到etcd中
+// 将数据永久写入到etcd中
 func (util *ETCDUtil) Put(key string, value string) error {
 	_, err := util.cli.Put(context.Background(), key, value)
 	return err

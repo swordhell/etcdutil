@@ -29,6 +29,7 @@ func TestEtcdDiscovery(t *testing.T) {
 		var i int = 30
 		for {
 			i -= 1
+			util.RevokeLease()
 			if i < 0 {
 				break
 			}
